@@ -110,11 +110,7 @@ claude-desktop-rtl/
 └── .gitignore
 ```
 
-## Credits
 
-- Inspired by [shraga100/claude-desktop-rtl-patch](https://github.com/shraga100/claude-desktop-rtl-patch)
-- ASAR header hash technique from the Electron community
-- Certificate swap approach from reverse-engineering Claude Desktop's integrity chain
 
 ## License
 

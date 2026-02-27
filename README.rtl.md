@@ -75,9 +75,3 @@ irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/
 ## אחרי עדכון Claude Desktop
 
 עדכון מוחק את הפאצ'. פשוט הריצו שוב את `patch.ps1`.
-
-## קרדיטים
-
-- בהשראת [shraga100/claude-desktop-rtl-patch](https://github.com/shraga100/claude-desktop-rtl-patch)
-- טכניקת ASAR header hash מקהילת Electron
-- גישת החלפת Certificate מ-reverse engineering של שרשרת התקינות של Claude Desktop

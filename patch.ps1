@@ -15,7 +15,6 @@
 .NOTES
     Version: 1.1.0
     Author:  Nati Levy (claude-desktop-rtl-natilevy)
-    Based on: shraga100/claude-desktop-rtl-patch
     License: MIT
 #>
 
