@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    Claude Desktop RTL Patcher — claude-desktop-rtl-natilevy
+    Claude Desktop RTL Patcher - claude-desktop-rtl-natilevy
 .DESCRIPTION
     Adds persistent RTL (Right-to-Left) support to Claude Desktop on Windows.
     Hebrew and Arabic text auto-detects direction. Code blocks stay LTR.
 
     What it does:
     Phase 0: Check & install dependencies (Node.js, @electron/asar, Claude Desktop)
-    Phase 1: Extract app.asar → inject RTL JavaScript → repack
-    Phase 2: Compute ASAR header hash → replace in claude.exe
-    Phase 3: Generate self-signed cert → replace in cowork-svc.exe → re-sign both
+    Phase 1: Extract app.asar -> inject RTL JavaScript -> repack
+    Phase 2: Compute ASAR header hash -> replace in claude.exe
+    Phase 3: Generate self-signed cert -> replace in cowork-svc.exe -> re-sign both
 
     Run as Administrator!
 .NOTES
@@ -579,7 +579,7 @@ function Compute-AsarHash($AsarPath) {
 # -----------------------------------------------------------------------------
 function Install-Patch {
     Write-Host "`n========================================================" -ForegroundColor Cyan
-    Write-Host "  Claude Desktop RTL Patcher v$VERSION — natilevy" -ForegroundColor Cyan
+    Write-Host "  Claude Desktop RTL Patcher v$VERSION - natilevy" -ForegroundColor Cyan
     Write-Host "  Installing RTL support..." -ForegroundColor Cyan
     Write-Host "========================================================`n" -ForegroundColor Cyan
 
@@ -617,7 +617,8 @@ function Install-Patch {
 
         if (Test-Path $global:TmpDir) { Remove-Item $global:TmpDir -Recurse -Force }
         Write-Log "Extracting ASAR..."
-        cmd.exe /c "`"$AsarCmd`" extract `"$AsarPath`" `"$global:TmpDir`""
+        & $AsarCmd extract $AsarPath $global:TmpDir
+        if (-not (Test-Path $global:TmpDir)) { throw "ASAR extraction failed - output directory not created." }
 
         $BuildDir = Join-Path $global:TmpDir ".vite\build"
         if (Test-Path $BuildDir) {
@@ -637,7 +638,8 @@ function Install-Patch {
 
         $TmpAsarPath = "$AsarPath.new"
         Write-Log "Repacking ASAR..."
-        cmd.exe /c "`"$AsarCmd`" pack `"$global:TmpDir`" `"$TmpAsarPath`""
+        & $AsarCmd pack $global:TmpDir $TmpAsarPath
+        if (-not (Test-Path $TmpAsarPath)) { throw "ASAR repacking failed - output file not created." }
 
         $NewHash = Compute-AsarHash $TmpAsarPath
         Write-Log "New hash: $NewHash"
@@ -681,7 +683,7 @@ function Install-Patch {
                 throw "Anthropic certificate not found in cowork-svc.exe."
             }
 
-            Write-Log "Certificate found at offset 0x$([Convert]::ToString($StartPos, 16)) ($OldCertSize bytes)"
+            Write-Log ('Certificate found at offset 0x{0} ({1} bytes)' -f [Convert]::ToString($StartPos, 16), $OldCertSize)
 
             # Clone original cert subject
             $OriginalSig = Get-AuthenticodeSignature -FilePath $SourceExe
@@ -709,9 +711,9 @@ function Install-Patch {
                 if ($NewCertBytes.Length -le $OldCertSize) {
                     $Store.Add($Cert)
                     $ValidCertFound = $true
-                    Write-Success "Certificate fits ($($NewCertBytes.Length) <= $OldCertSize bytes)"
+                    Write-Success ('Certificate fits ({0} <= {1} bytes)' -f $NewCertBytes.Length, $OldCertSize)
                 } else {
-                    Write-Warn "Too large ($($NewCertBytes.Length) bytes), retrying..."
+                    Write-Warn ('Too large ({0} bytes), retrying...' -f $NewCertBytes.Length)
                     Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.Thumbprint -eq $Cert.Thumbprint } | Remove-Item -ErrorAction SilentlyContinue
                     $Attempts++
                 }
@@ -772,7 +774,7 @@ function Install-Patch {
         }
 
         # ==== CLEANUP & LAUNCH ====
-        Write-Step "Phase 3/3: Cleanup & Launch"
+        Write-Step "Phase 3/3: Cleanup and Launch"
         if (Test-Path $global:TmpDir) { Remove-Item $global:TmpDir -Recurse -Force }
         Start-ClaudeServices
 
@@ -890,7 +892,7 @@ function Show-Menu {
             Write-Host "`n  $($_.Exception.Message)" -ForegroundColor Red
         }
 
-        Write-Host "`n  Press Enter to exit..."
+        Write-Host "`n  Press Enter to exit"
         $null = Read-Host
     }
     elseif ($choice -eq '3') { Exit }
