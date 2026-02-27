@@ -6,13 +6,14 @@
     Hebrew and Arabic text auto-detects direction. Code blocks stay LTR.
 
     What it does:
+    Phase 0: Check & install dependencies (Node.js, @electron/asar, Claude Desktop)
     Phase 1: Extract app.asar → inject RTL JavaScript → repack
     Phase 2: Compute ASAR header hash → replace in claude.exe
     Phase 3: Generate self-signed cert → replace in cowork-svc.exe → re-sign both
 
     Run as Administrator!
 .NOTES
-    Version: 1.0.0
+    Version: 1.1.0
     Author:  Nati Levy (claude-desktop-rtl-natilevy)
     Based on: shraga100/claude-desktop-rtl-patch
     License: MIT
@@ -29,7 +30,7 @@ if (-not $IsAdmin) {
         Start-Process -FilePath PowerShell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
     } else {
         $TmpScript = Join-Path $env:TEMP "claude_rtl_patch_natilevy.ps1"
-        $RepoUrl = "https://raw.githubusercontent.com/natilevy/claude-desktop-rtl/main/patch.ps1"
+        $RepoUrl = "https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl-natilevy/master/patch.ps1"
         Write-Host "Downloading script for elevation..." -ForegroundColor Cyan
         Invoke-RestMethod -Uri $RepoUrl -OutFile $TmpScript
         Start-Process -FilePath PowerShell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$TmpScript`""
@@ -42,7 +43,9 @@ if (-not $IsAdmin) {
 # -----------------------------------------------------------------------------
 $ErrorActionPreference = "Stop"
 $global:TmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "claude_rtl_patch_tmp"
-$VERSION = "1.0.0"
+$VERSION = "1.1.0"
+# Resolve script directory (for local asar fallback)
+$global:ScriptDir = if ($MyInvocation.MyCommand.Path) { Split-Path -Parent $MyInvocation.MyCommand.Path } else { $PWD.Path }
 
 # -----------------------------------------------------------------------------
 # RTL INJECTION PAYLOAD
@@ -249,6 +252,180 @@ function Write-Step($msg)    { Write-Host "`n> $msg" -ForegroundColor Magenta }
 function Write-Success($msg) { Write-Host "  [+] $msg" -ForegroundColor Green }
 function Write-Warn($msg)    { Write-Host "  [!] $msg" -ForegroundColor Yellow }
 
+# -----------------------------------------------------------------------------
+# DEPENDENCY MANAGEMENT
+# -----------------------------------------------------------------------------
+function Ensure-Dependencies {
+    <#
+    .SYNOPSIS
+        Checks all required dependencies and installs missing ones automatically.
+        Returns the path to the asar executable.
+    #>
+    Write-Step "Checking dependencies..."
+
+    $AllGood = $true
+
+    # --- 1. Claude Desktop ---
+    $claudePkg = Get-AppxPackage | Where-Object { $_.Name -like '*Claude*' } | Select-Object -First 1
+    if ($claudePkg) {
+        Write-Success "Claude Desktop: v$($claudePkg.Version)"
+    } else {
+        Write-Host ""
+        Write-Host "  [X] Claude Desktop is NOT installed!" -ForegroundColor Red
+        Write-Host "      Install from: https://claude.ai/download" -ForegroundColor Yellow
+        Write-Host "      Or from the Microsoft Store." -ForegroundColor Yellow
+        $AllGood = $false
+    }
+
+    # --- 2. Node.js ---
+    $NodePath = $null
+    $NpmPath = $null
+    $NpxPath = $null
+
+    # Check standard locations + PATH
+    $NodeCandidates = @(
+        (Get-Command "node.exe" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue),
+        "$env:ProgramFiles\nodejs\node.exe",
+        "${env:ProgramFiles(x86)}\nodejs\node.exe",
+        "$env:LOCALAPPDATA\Programs\nodejs\node.exe",
+        "$env:APPDATA\nvm\current\node.exe"
+    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+
+    if ($NodeCandidates) {
+        $NodePath = $NodeCandidates
+        $NodeDir = Split-Path $NodePath -Parent
+        $NpmPath = Join-Path $NodeDir "npm.cmd"
+        $NpxPath = Join-Path $NodeDir "npx.cmd"
+        $nodeVersion = & $NodePath --version 2>$null
+        Write-Success "Node.js: $nodeVersion ($NodePath)"
+
+        # Ensure node dir is in PATH for this session (fixes Admin elevation PATH issues)
+        if ($env:PATH -notlike "*$NodeDir*") {
+            $env:PATH = "$NodeDir;$env:PATH"
+            Write-Log "Added Node.js to session PATH."
+        }
+    } else {
+        Write-Warn "Node.js: NOT FOUND"
+        Write-Log "Attempting to install Node.js via winget..."
+
+        $wingetAvailable = Get-Command "winget.exe" -ErrorAction SilentlyContinue
+        if ($wingetAvailable) {
+            try {
+                Write-Log "Running: winget install OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements"
+                $installResult = cmd.exe /c "winget install OpenJS.NodeJS.LTS --accept-source-agreements --accept-package-agreements 2>&1"
+                Write-Host $installResult
+
+                # Refresh PATH after install
+                $machPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
+                $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
+                $env:PATH = "$machPath;$userPath"
+
+                # Re-check
+                $NodePath = (Get-Command "node.exe" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue)
+                if (-not $NodePath) { $NodePath = "$env:ProgramFiles\nodejs\node.exe" }
+
+                if (Test-Path $NodePath) {
+                    $NodeDir = Split-Path $NodePath -Parent
+                    $NpmPath = Join-Path $NodeDir "npm.cmd"
+                    $NpxPath = Join-Path $NodeDir "npx.cmd"
+                    if ($env:PATH -notlike "*$NodeDir*") { $env:PATH = "$NodeDir;$env:PATH" }
+                    $nodeVersion = & $NodePath --version 2>$null
+                    Write-Success "Node.js installed: $nodeVersion"
+                } else {
+                    Write-Host "  [X] Node.js installation completed but node.exe not found." -ForegroundColor Red
+                    Write-Host "      You may need to restart PowerShell or reboot." -ForegroundColor Yellow
+                    Write-Host "      Then re-run this script." -ForegroundColor Yellow
+                    $AllGood = $false
+                }
+            } catch {
+                Write-Host "  [X] Failed to install Node.js via winget: $($_.Exception.Message)" -ForegroundColor Red
+                Write-Host "      Install manually from: https://nodejs.org" -ForegroundColor Yellow
+                $AllGood = $false
+            }
+        } else {
+            Write-Host "  [X] Node.js is required but winget is not available for auto-install." -ForegroundColor Red
+            Write-Host "      Install Node.js manually from: https://nodejs.org" -ForegroundColor Yellow
+            $AllGood = $false
+        }
+    }
+
+    # --- 3. @electron/asar ---
+    $AsarCmd = $null
+
+    if ($NodePath) {
+        # Strategy A: Check for local node_modules (project bundled)
+        $LocalAsar = Join-Path $global:ScriptDir "node_modules\.bin\asar.cmd"
+        $LocalAsar2 = Join-Path $global:ScriptDir "node_modules\@electron\asar\bin\asar.js"
+
+        if (Test-Path $LocalAsar) {
+            $AsarCmd = $LocalAsar
+            $asarVer = & cmd.exe /c "`"$AsarCmd`" --version 2>&1"
+            Write-Success "@electron/asar: $asarVer (local)"
+        } elseif (Test-Path $LocalAsar2) {
+            $AsarCmd = "node `"$LocalAsar2`""
+            Write-Success "@electron/asar: local (node_modules)"
+        } else {
+            # Strategy B: Check global npx
+            try {
+                $npxTest = & cmd.exe /c "npx --yes @electron/asar --version 2>&1"
+                if ($LASTEXITCODE -eq 0 -and $npxTest -match '^\d') {
+                    $AsarCmd = "npx --yes @electron/asar"
+                    Write-Success "@electron/asar: $npxTest (npx)"
+                } else {
+                    throw "npx failed"
+                }
+            } catch {
+                # Strategy C: Install locally via npm
+                Write-Log "@electron/asar not found. Installing locally..."
+                $packageJson = Join-Path $global:ScriptDir "package.json"
+                if (Test-Path $packageJson) {
+                    Write-Log "Running: npm install (in $global:ScriptDir)"
+                    Push-Location $global:ScriptDir
+                    & cmd.exe /c "npm install --no-audit --no-fund 2>&1"
+                    Pop-Location
+                } else {
+                    Write-Log "Running: npm install @electron/asar"
+                    Push-Location $global:ScriptDir
+                    & cmd.exe /c "npm install @electron/asar --no-audit --no-fund 2>&1"
+                    Pop-Location
+                }
+
+                $LocalAsar = Join-Path $global:ScriptDir "node_modules\.bin\asar.cmd"
+                if (Test-Path $LocalAsar) {
+                    $AsarCmd = $LocalAsar
+                    $asarVer = & cmd.exe /c "`"$AsarCmd`" --version 2>&1"
+                    Write-Success "@electron/asar: $asarVer (just installed)"
+                } else {
+                    Write-Host "  [X] Failed to install @electron/asar." -ForegroundColor Red
+                    Write-Host "      Try manually: npm install @electron/asar" -ForegroundColor Yellow
+                    $AllGood = $false
+                }
+            }
+        }
+    }
+
+    # --- 4. PowerShell version ---
+    $psVer = $PSVersionTable.PSVersion
+    if ($psVer.Major -ge 5) {
+        Write-Success "PowerShell: $psVer"
+    } else {
+        Write-Warn "PowerShell $psVer detected. Version 5.1+ recommended."
+    }
+
+    # --- Summary ---
+    if (-not $AllGood) {
+        Write-Host ""
+        Write-Host "  ========================================" -ForegroundColor Red
+        Write-Host "  Missing dependencies! Fix the above" -ForegroundColor Red
+        Write-Host "  issues and re-run the script." -ForegroundColor Red
+        Write-Host "  ========================================" -ForegroundColor Red
+        throw "Missing required dependencies."
+    }
+
+    Write-Success "All dependencies satisfied."
+    return $AsarCmd
+}
+
 function Find-Bytes([byte[]]$Haystack, [byte[]]$Needle, [int]$StartIndex = 0) {
     if ($Needle.Length -eq 0 -or $Haystack.Length -lt $Needle.Length) { return -1 }
     for ($i = $StartIndex; $i -le ($Haystack.Length - $Needle.Length); $i++) {
@@ -407,6 +584,9 @@ function Install-Patch {
     Write-Host "  Installing RTL support..." -ForegroundColor Cyan
     Write-Host "========================================================`n" -ForegroundColor Cyan
 
+    # Phase 0: Dependencies
+    $AsarCmd = Ensure-Dependencies
+
     $ClaudeDir = Find-ClaudeDir
     if (-not $ClaudeDir) { throw "Claude Desktop not found." }
     Write-Success "Found: $ClaudeDir"
@@ -418,13 +598,6 @@ function Install-Patch {
     $CoworkSvcPath = Join-Path $ResourcesDir "cowork-svc.exe"
 
     if (-not (Test-Path $AsarPath)) { throw "app.asar not found!" }
-
-    Try {
-        cmd.exe /c "npx --yes @electron/asar --version 2>&1" | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "fail" }
-    } Catch {
-        throw "Node.js is required. Install from https://nodejs.org"
-    }
 
     Stop-ClaudeServices
 
@@ -445,7 +618,7 @@ function Install-Patch {
 
         if (Test-Path $global:TmpDir) { Remove-Item $global:TmpDir -Recurse -Force }
         Write-Log "Extracting ASAR..."
-        cmd.exe /c "npx --yes @electron/asar extract `"$AsarPath`" `"$global:TmpDir`""
+        cmd.exe /c "`"$AsarCmd`" extract `"$AsarPath`" `"$global:TmpDir`""
 
         $BuildDir = Join-Path $global:TmpDir ".vite\build"
         if (Test-Path $BuildDir) {
@@ -465,7 +638,7 @@ function Install-Patch {
 
         $TmpAsarPath = "$AsarPath.new"
         Write-Log "Repacking ASAR..."
-        cmd.exe /c "npx --yes @electron/asar pack `"$global:TmpDir`" `"$TmpAsarPath`""
+        cmd.exe /c "`"$AsarCmd`" pack `"$global:TmpDir`" `"$TmpAsarPath`""
 
         $NewHash = Compute-AsarHash $TmpAsarPath
         Write-Log "New hash: $NewHash"

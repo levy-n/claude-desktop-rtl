@@ -17,29 +17,43 @@
 פתח PowerShell והרץ:
 
 ```powershell
-irm https://raw.githubusercontent.com/natilevy/claude-desktop-rtl/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl-natilevy/master/install.ps1 | iex
 ```
+
+הסקריפט מוריד את הפרויקט, בודק תלויות, מתקין מה שחסר, ומפאצ' את Claude Desktop.
 
 ## התקנה ידנית
 
 1. הורד את הריפו
 2. קליק ימני על `patch.ps1` → **Run with PowerShell**
 3. בחר **1** (Install) ואשר עם **Y**
-4. Claude Desktop יופעל מחדש עם תמיכת RTL
+4. הסקריפט בודק תלויות ומתקין חסרות
+5. Claude Desktop יופעל מחדש עם תמיכת RTL
 
-## דרישות
+## תלויות
 
-- Windows 10/11
-- Claude Desktop (מ-Microsoft Store)
-- Node.js (בשביל `npx asar`)
-- הרשאות Administrator
+הסקריפט בודק ומתקין אוטומטית:
+
+| תלות | נדרש | התקנה אוטומטית |
+|------|-------|----------------|
+| **Windows 10/11** | כן | — |
+| **Claude Desktop** | כן | לא — התקן מ-[claude.ai/download](https://claude.ai/download) |
+| **Node.js** | כן | כן — דרך `winget` |
+| **@electron/asar** | כן | כן — דרך `npm install` מקומי |
+| **PowerShell 5.1+** | כן | כלול ב-Windows |
+| **Administrator** | כן | UAC אוטומטי |
+
+**אם יש לך Node.js** — הסקריפט יזהה וישתמש.
+**אם חסר Node.js** — הסקריפט מנסה להתקין דרך `winget`. אם לא זמין, מציג קישור.
+**@electron/asar** — קודם בודק `node_modules` מקומי, אחר כך `npx`, ואם אין — מתקין אוטומטית.
 
 ## איך זה עובד
 
-הפאצ'ר מבצע 3 פאזות:
+הפאצ'ר מבצע 4 פאזות:
 
 | פאזה | מה | למה |
 |------|-----|------|
+| **0. תלויות** | בדיקת Node.js, asar, Claude Desktop — התקנת חסרות | הכנה לפני הפאצ' |
 | **1. ASAR** | חילוץ, הזרקת RTL JavaScript, אריזה מחדש | לוגיקת RTL רצה בכל טעינת דף |
 | **2. Hash** | חישוב hash חדש, החלפה ב-claude.exe | Electron מאמת תקינות ASAR |
 | **3. Certificate** | יצירת certificate, החלפה ב-cowork-svc.exe, חתימה מחדש | שירות הרקע מאמת חתימת claude.exe |

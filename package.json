@@ -1,0 +1,14 @@
+{
+  "name": "claude-desktop-rtl-natilevy",
+  "version": "1.0.0",
+  "description": "RTL (Hebrew/Arabic) support for Claude Desktop on Windows",
+  "author": "Nati Levy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mediawave-dev/claude-desktop-rtl-natilevy"
+  },
+  "dependencies": {
+    "@electron/asar": "^4.0.1"
+  }
+}
