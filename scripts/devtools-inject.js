@@ -1,6 +1,6 @@
 // ============================================
 // Claude Desktop RTL — DevTools Console Injection
-// claude-desktop-rtl-natilevy
+// claude-desktop-rtl
 // ============================================
 //
 // SETUP (one-time):
@@ -93,5 +93,5 @@
     // Apply to existing content
     document.querySelectorAll('.prose p,.prose li,.prose h1,.prose h2,.prose h3,.prose h4,.prose h5,.prose h6,.prose td,.prose th,.prose blockquote').forEach(applyDir);
 
-    console.log('[RTL] Claude Desktop RTL support active! (claude-desktop-rtl-natilevy)');
+    console.log('[RTL] Claude Desktop RTL support active! (claude-desktop-rtl)');
 })();

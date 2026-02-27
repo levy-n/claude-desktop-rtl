@@ -1,4 +1,4 @@
-# claude-desktop-rtl-natilevy
+# claude-desktop-rtl
 
 **RTL (Right-to-Left) support for Claude Desktop on Windows.**
 
@@ -20,7 +20,7 @@ Adds automatic Hebrew and Arabic text direction to Claude Desktop — code block
 Open PowerShell and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.ps1 | iex
 ```
 
 This downloads the full project, auto-elevates to Administrator, checks/installs dependencies, and patches Claude Desktop.

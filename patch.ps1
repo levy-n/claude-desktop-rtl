@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Claude Desktop RTL Patcher - claude-desktop-rtl-natilevy
+    Claude Desktop RTL Patcher — claude-desktop-rtl
 .DESCRIPTION
     Adds persistent RTL (Right-to-Left) support to Claude Desktop on Windows.
     Hebrew and Arabic text auto-detects direction. Code blocks stay LTR.
@@ -14,7 +14,7 @@
     Run as Administrator!
 .NOTES
     Version: 1.1.0
-    Author:  Nati Levy (claude-desktop-rtl-natilevy)
+    Author:  Nati Levy (claude-desktop-rtl)
     License: MIT
 #>
 
@@ -28,8 +28,8 @@ if (-not $IsAdmin) {
     if ($ScriptPath) {
         Start-Process -FilePath PowerShell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
     } else {
-        $TmpScript = Join-Path $env:TEMP "claude_rtl_patch_natilevy.ps1"
-        $RepoUrl = "https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/patch.ps1"
+        $TmpScript = Join-Path $env:TEMP "claude_rtl_patch.ps1"
+        $RepoUrl = "https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/patch.ps1"
         Write-Host "Downloading script for elevation..." -ForegroundColor Cyan
         Invoke-RestMethod -Uri $RepoUrl -OutFile $TmpScript
         Start-Process -FilePath PowerShell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$TmpScript`""
@@ -50,7 +50,7 @@ $global:ScriptDir = if ($MyInvocation.MyCommand.Path) { Split-Path -Parent $MyIn
 # RTL INJECTION PAYLOAD
 # -----------------------------------------------------------------------------
 $RTL_INJECTION_CODE = @'
-// --- CLAUDE RTL PATCH START (claude-desktop-rtl-natilevy v1.0.0) ---
+// --- CLAUDE RTL PATCH START (claude-desktop-rtl v1.0.0) ---
 ;(function() {
     'use strict';
     if (typeof document === 'undefined') return;
@@ -579,7 +579,7 @@ function Compute-AsarHash($AsarPath) {
 # -----------------------------------------------------------------------------
 function Install-Patch {
     Write-Host "`n========================================================" -ForegroundColor Cyan
-    Write-Host "  Claude Desktop RTL Patcher v$VERSION - natilevy" -ForegroundColor Cyan
+    Write-Host "  Claude Desktop RTL Patcher v$VERSION — levy-n" -ForegroundColor Cyan
     Write-Host "  Installing RTL support..." -ForegroundColor Cyan
     Write-Host "========================================================`n" -ForegroundColor Cyan
 
@@ -867,7 +867,7 @@ function Show-Menu {
     Clear-Host
     Write-Host ""
     Write-Host "  Claude Desktop RTL Patcher v$VERSION" -ForegroundColor Cyan
-    Write-Host "  github.com/levy-n/claude-desktop-rtl-natilevy" -ForegroundColor DarkGray
+    Write-Host "  github.com/levy-n/claude-desktop-rtl" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  1. Install RTL Patch" -ForegroundColor White
     Write-Host "  2. Restore Original (Remove Patch)" -ForegroundColor White

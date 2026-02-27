@@ -1,16 +1,16 @@
 <#
 .SYNOPSIS
-    One-liner installer for claude-desktop-rtl-natilevy
+    One-liner installer for claude-desktop-rtl
 .DESCRIPTION
-    Usage: irm https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl-natilevy/master/install.ps1 | iex
+    Usage: irm https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl/master/install.ps1 | iex
 #>
 
-$TmpDir = Join-Path $env:TEMP "claude-rtl-natilevy"
-$RepoZip = "https://github.com/levy-n/claude-desktop-rtl-natilevy/archive/refs/heads/master.zip"
-$ZipPath = Join-Path $env:TEMP "claude-rtl-natilevy.zip"
+$TmpDir = Join-Path $env:TEMP "claude-rtl-tmp"
+$RepoZip = "https://github.com/levy-n/claude-desktop-rtl/archive/refs/heads/master.zip"
+$ZipPath = Join-Path $env:TEMP "claude-rtl-tmp.zip"
 
 Write-Host ""
-Write-Host "  Claude Desktop RTL — natilevy" -ForegroundColor Cyan
+Write-Host "  Claude Desktop RTL — levy-n" -ForegroundColor Cyan
 Write-Host "  Downloading full project..." -ForegroundColor Gray
 Write-Host ""
 

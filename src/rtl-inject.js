@@ -1,6 +1,6 @@
 /**
  * Claude Desktop RTL Injection — Full Version
- * claude-desktop-rtl-natilevy
+ * claude-desktop-rtl
  *
  * Smart RTL support with MutationObserver for streamed responses.
  * Auto-detects Hebrew/Arabic text. Code blocks stay LTR.
@@ -19,7 +19,7 @@
 
     // ---- CSS ----
     const RTL_CSS = `
-/* Claude Desktop RTL Support — natilevy */
+/* Claude Desktop RTL Support — levy-n */
 
 /* Auto-direction on message containers */
 [data-message-author-role="assistant"] .prose,
@@ -137,7 +137,7 @@ pre, code, .code-block, [class*="code"], [class*="Code"],
         injectCSS();
         applyToExisting();
         setupObserver();
-        console.log('[RTL] Claude Desktop RTL support active! (claude-desktop-rtl-natilevy)');
+        console.log('[RTL] Claude Desktop RTL support active! (claude-desktop-rtl)');
     }
 
     if (document.readyState === 'loading') {
