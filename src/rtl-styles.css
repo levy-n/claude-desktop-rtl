@@ -1,0 +1,77 @@
+/*
+ * Claude Desktop RTL Support — Standalone CSS
+ * claude-desktop-rtl-natilevy
+ *
+ * Smart auto-direction for Hebrew/Arabic text.
+ * Code blocks, math, and SVG stay LTR.
+ */
+
+/* Auto-direction on message content */
+[data-message-author-role="assistant"] .prose,
+[data-message-author-role="assistant"] .font-claude-message,
+[data-message-author-role="assistant"] [class*="Message"],
+[data-message-author-role="assistant"] > div > div,
+.prose p,
+.prose li,
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6,
+.prose blockquote,
+.prose td, .prose th {
+    direction: auto;
+    unicode-bidi: plaintext;
+}
+
+/* User input */
+textarea,
+[contenteditable="true"],
+.ProseMirror,
+[role="textbox"],
+div[data-placeholder] {
+    direction: auto;
+    unicode-bidi: plaintext;
+    text-align: start;
+}
+
+/* Code blocks: ALWAYS LTR */
+pre,
+code,
+.code-block,
+[class*="code"],
+[class*="Code"],
+.hljs,
+[class*="highlight"],
+[data-language],
+.font-mono,
+pre *,
+code *,
+.monaco-editor,
+.monaco-editor * {
+    direction: ltr !important;
+    unicode-bidi: embed !important;
+    text-align: left !important;
+}
+
+:not(pre) > code {
+    direction: ltr !important;
+    unicode-bidi: embed !important;
+}
+
+/* Lists */
+.prose ul,
+.prose ol {
+    direction: auto;
+    unicode-bidi: plaintext;
+}
+
+/* Tables */
+.prose table {
+    direction: auto;
+}
+
+/* Math & SVG: LTR */
+.katex,
+.MathJax,
+[class*="math"],
+[class*="Math"],
+svg {
+    direction: ltr !important;
+}

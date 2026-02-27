@@ -1,0 +1,7 @@
+node_modules/
+_patch_work/
+backup/
+*.bak
+*.log
+.context/
+asar-extract/
