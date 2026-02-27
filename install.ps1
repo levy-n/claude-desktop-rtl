@@ -6,7 +6,7 @@
 #>
 
 $TmpDir = Join-Path $env:TEMP "claude-rtl-natilevy"
-$RepoZip = "https://github.com/mediawave-dev/claude-desktop-rtl-natilevy/archive/refs/heads/master.zip"
+$RepoZip = "https://github.com/levy-n/claude-desktop-rtl-natilevy/archive/refs/heads/master.zip"
 $ZipPath = Join-Path $env:TEMP "claude-rtl-natilevy.zip"
 
 Write-Host ""

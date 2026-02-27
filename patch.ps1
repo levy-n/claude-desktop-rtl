@@ -30,7 +30,7 @@ if (-not $IsAdmin) {
         Start-Process -FilePath PowerShell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
     } else {
         $TmpScript = Join-Path $env:TEMP "claude_rtl_patch_natilevy.ps1"
-        $RepoUrl = "https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl-natilevy/master/patch.ps1"
+        $RepoUrl = "https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/patch.ps1"
         Write-Host "Downloading script for elevation..." -ForegroundColor Cyan
         Invoke-RestMethod -Uri $RepoUrl -OutFile $TmpScript
         Start-Process -FilePath PowerShell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$TmpScript`""
@@ -866,7 +866,7 @@ function Show-Menu {
     Clear-Host
     Write-Host ""
     Write-Host "  Claude Desktop RTL Patcher v$VERSION" -ForegroundColor Cyan
-    Write-Host "  github.com/natilevy/claude-desktop-rtl" -ForegroundColor DarkGray
+    Write-Host "  github.com/levy-n/claude-desktop-rtl-natilevy" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  1. Install RTL Patch" -ForegroundColor White
     Write-Host "  2. Restore Original (Remove Patch)" -ForegroundColor White

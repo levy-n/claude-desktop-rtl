@@ -20,7 +20,7 @@ Adds automatic Hebrew and Arabic text direction to Claude Desktop — code block
 Open PowerShell and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl-natilevy/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/install.ps1 | iex
 ```
 
 This downloads the full project, auto-elevates to Administrator, checks/installs dependencies, and patches Claude Desktop.

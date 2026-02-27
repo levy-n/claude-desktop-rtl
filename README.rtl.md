@@ -17,7 +17,7 @@
 פתח PowerShell והרץ:
 
 ```powershell
-irm https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl-natilevy/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/install.ps1 | iex
 ```
 
 הסקריפט מוריד את הפרויקט, בודק תלויות, מתקין מה שחסר, ומפאצ' את Claude Desktop.
