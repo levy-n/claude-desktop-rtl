@@ -15,23 +15,17 @@ Adds automatic Hebrew and Arabic text direction to Claude Desktop — code block
 - Works with MutationObserver for streamed responses
 - Survives app restarts (persistent ASAR patch)
 
-## Quick Install (One-Liner)
+## Install
 
-Open PowerShell and run:
+Just run this in PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.ps1 | iex
 ```
 
-This downloads the full project, auto-elevates to Administrator, checks/installs dependencies, and patches Claude Desktop.
+That's it. The script downloads everything, checks dependencies, installs what's missing, and patches Claude Desktop automatically.
 
-## Manual Install
-
-1. Clone or download this repo
-2. Right-click `patch.ps1` → **Run with PowerShell**
-3. Select **1** (Install) and confirm with **Y**
-4. The script checks dependencies, installs missing ones, and patches
-5. Claude Desktop restarts with RTL support
+> **Already cloned the repo?** Right-click `patch.ps1` → Run with PowerShell → Select **1** (Install).
 
 ## Dependencies
 

@@ -2,9 +2,10 @@
 .SYNOPSIS
     One-liner installer for claude-desktop-rtl
 .DESCRIPTION
-    Usage: irm https://raw.githubusercontent.com/mediawave-dev/claude-desktop-rtl/master/install.ps1 | iex
+    Usage: irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.ps1 | iex
 #>
 
+$ErrorActionPreference = "Stop"
 $TmpDir = Join-Path $env:TEMP "claude-rtl-tmp"
 $RepoZip = "https://github.com/levy-n/claude-desktop-rtl/archive/refs/heads/master.zip"
 $ZipPath = Join-Path $env:TEMP "claude-rtl-tmp.zip"
@@ -14,11 +15,18 @@ Write-Host "  Claude Desktop RTL — levy-n" -ForegroundColor Cyan
 Write-Host "  Downloading full project..." -ForegroundColor Gray
 Write-Host ""
 
-# Download and extract full project (includes package.json for local asar)
-if (Test-Path $TmpDir) { Remove-Item $TmpDir -Recurse -Force }
-Invoke-WebRequest -Uri $RepoZip -OutFile $ZipPath -UseBasicParsing
-Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
-Remove-Item $ZipPath -Force
+try {
+    # Download and extract full project (includes package.json for local asar)
+    if (Test-Path $TmpDir) { Remove-Item $TmpDir -Recurse -Force }
+    Invoke-WebRequest -Uri $RepoZip -OutFile $ZipPath -UseBasicParsing
+    Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
+    Remove-Item $ZipPath -Force
+} catch {
+    Write-Host "  [X] Download failed: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "      Check your internet connection and try again." -ForegroundColor Yellow
+    if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue }
+    Exit 1
+}
 
 # Find the extracted folder (github adds -master suffix)
 $ExtractedDir = Get-ChildItem $TmpDir -Directory | Select-Object -First 1

@@ -12,23 +12,17 @@
 - MutationObserver לתגובות streaming
 - שורד הפעלות מחדש (פאצ' קבוע ב-ASAR)
 
-## התקנה מהירה
+## התקנה
 
-פתח PowerShell והרץ:
+פשוט תריצו את זה ב-PowerShell:
 
 ```powershell
 irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.ps1 | iex
 ```
 
-הסקריפט מוריד את הפרויקט, בודק תלויות, מתקין מה שחסר, ומפאצ' את Claude Desktop.
+זהו. הסקריפט מוריד הכל, בודק תלויות, מתקין מה שחסר, ומפעיל את הפאצ' אוטומטית.
 
-## התקנה ידנית
-
-1. הורד את הריפו
-2. קליק ימני על `patch.ps1` → **Run with PowerShell**
-3. בחר **1** (Install) ואשר עם **Y**
-4. הסקריפט בודק תלויות ומתקין חסרות
-5. Claude Desktop יופעל מחדש עם תמיכת RTL
+> **כבר הורדת את הריפו?** קליק ימני על `patch.ps1` → Run with PowerShell → בחר **1** (Install).
 
 ## תלויות
 

@@ -380,12 +380,12 @@ function Ensure-Dependencies {
                 if (Test-Path $packageJson) {
                     Write-Log "Running: npm install (in $global:ScriptDir)"
                     Push-Location $global:ScriptDir
-                    & cmd.exe /c "npm install --no-audit --no-fund 2>&1"
+                    & cmd.exe /c "npm install --no-audit --no-fund --ignore-scripts 2>&1" | Out-Null
                     Pop-Location
                 } else {
                     Write-Log "Running: npm install @electron/asar"
                     Push-Location $global:ScriptDir
-                    & cmd.exe /c "npm install @electron/asar --no-audit --no-fund 2>&1"
+                    & cmd.exe /c "npm install @electron/asar --no-audit --no-fund --ignore-scripts 2>&1" | Out-Null
                     Pop-Location
                 }
 
@@ -557,21 +557,26 @@ function Take-Ownership($Path) {
 }
 
 function Compute-AsarHash($AsarPath) {
-    $fs = [System.IO.File]::OpenRead($AsarPath)
-    $br = New-Object System.IO.BinaryReader($fs)
-    $fs.Seek(12, [System.IO.SeekOrigin]::Begin) | Out-Null
-    $jsonSize = $br.ReadUInt32()
-    if ($jsonSize -le 0 -or $jsonSize -gt 10485760) {
-        $fs.Close()
-        throw "Abnormal ASAR header size: $jsonSize"
-    }
-    $jsonBytes = $br.ReadBytes($jsonSize)
-    $fs.Close()
+    $fs = $null
+    $br = $null
+    try {
+        $fs = [System.IO.File]::OpenRead($AsarPath)
+        $br = New-Object System.IO.BinaryReader($fs)
+        $fs.Seek(12, [System.IO.SeekOrigin]::Begin) | Out-Null
+        $jsonSize = $br.ReadUInt32()
+        if ($jsonSize -le 0 -or $jsonSize -gt 10485760) {
+            throw "Abnormal ASAR header size: $jsonSize"
+        }
+        $jsonBytes = $br.ReadBytes($jsonSize)
 
-    $jsonStr = [System.Text.Encoding]::UTF8.GetString($jsonBytes)
-    $sha256 = [System.Security.Cryptography.SHA256]::Create()
-    $hashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($jsonStr))
-    return [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
+        $jsonStr = [System.Text.Encoding]::UTF8.GetString($jsonBytes)
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $hashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($jsonStr))
+        return [BitConverter]::ToString($hashBytes).Replace("-", "").ToLower()
+    } finally {
+        if ($br) { $br.Close() }
+        if ($fs) { $fs.Close() }
+    }
 }
 
 # -----------------------------------------------------------------------------
@@ -618,6 +623,7 @@ function Install-Patch {
         if (Test-Path $global:TmpDir) { Remove-Item $global:TmpDir -Recurse -Force }
         Write-Log "Extracting ASAR..."
         & $AsarCmd extract $AsarPath $global:TmpDir
+        if ($LASTEXITCODE -ne 0) { throw "ASAR extraction failed (exit code $LASTEXITCODE)." }
         if (-not (Test-Path $global:TmpDir)) { throw "ASAR extraction failed - output directory not created." }
 
         $BuildDir = Join-Path $global:TmpDir ".vite\build"
@@ -639,6 +645,7 @@ function Install-Patch {
         $TmpAsarPath = "$AsarPath.new"
         Write-Log "Repacking ASAR..."
         & $AsarCmd pack $global:TmpDir $TmpAsarPath
+        if ($LASTEXITCODE -ne 0) { throw "ASAR repacking failed (exit code $LASTEXITCODE)." }
         if (-not (Test-Path $TmpAsarPath)) { throw "ASAR repacking failed - output file not created." }
 
         $NewHash = Compute-AsarHash $TmpAsarPath
@@ -841,6 +848,7 @@ function Restore-Patch {
     # Clean up certificates
     Try {
         Get-ChildItem Cert:\LocalMachine\My | Where-Object { $_.FriendlyName -eq 'Claude_RTL_NatiLevy' } | Remove-Item -ErrorAction SilentlyContinue
+        # Also clean up Root store in case older versions placed certs there
         Get-ChildItem Cert:\LocalMachine\Root | Where-Object { $_.FriendlyName -eq 'Claude_RTL_NatiLevy' } | Remove-Item -ErrorAction SilentlyContinue
         Write-Success "Custom certificates removed."
     } Catch {
