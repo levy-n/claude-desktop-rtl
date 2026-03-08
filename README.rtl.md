@@ -1,4 +1,4 @@
-# claude-desktop-rtl
+# claude-desktop-rtl-natilevy
 
 **תמיכת RTL (ימין-לשמאל) ב-Claude Desktop על Windows.**
 
@@ -12,17 +12,23 @@
 - MutationObserver לתגובות streaming
 - שורד הפעלות מחדש (פאצ' קבוע ב-ASAR)
 
-## התקנה
+## התקנה מהירה
 
-פשוט תריצו את זה ב-PowerShell:
+פתח PowerShell והרץ:
 
 ```powershell
-irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl-natilevy/master/install.ps1 | iex
 ```
 
-זהו. הסקריפט מוריד הכל, בודק תלויות, מתקין מה שחסר, ומפעיל את הפאצ' אוטומטית.
+הסקריפט מוריד את הפרויקט, בודק תלויות, מתקין מה שחסר, ומפאצ' את Claude Desktop.
 
-> **כבר הורדת את הריפו?** קליק ימני על `patch.ps1` → Run with PowerShell → בחר **1** (Install).
+## התקנה ידנית
+
+1. הורד את הריפו
+2. קליק ימני על `patch.ps1` → **Run with PowerShell**
+3. בחר **1** (Install) ואשר עם **Y**
+4. הסקריפט בודק תלויות ומתקין חסרות
+5. Claude Desktop יופעל מחדש עם תמיכת RTL
 
 ## תלויות
 
@@ -70,8 +76,3 @@ irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.p
 
 עדכון מוחק את הפאצ'. פשוט הריצו שוב את `patch.ps1`.
 
-## קרדיט
-
-פרויקט זה מבוסס על [shraga100/claude-desktop-rtl-patch](https://github.com/shraga100/claude-desktop-rtl-patch) מאת [@shraga100](https://github.com/shraga100), שפיתח את גישת הזרקת ה-RTL, ארכיטקטורת הפאצ' ב-3 פאזות, וטכניקת החלפת ה-certificate עבור Claude Desktop.
-
-פורק זה מוסיף ניהול תלויות אוטומטי, התקנה בשורה אחת, ושיפורים נוספים על הבסיס הזה.
