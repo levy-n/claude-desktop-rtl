@@ -69,3 +69,9 @@ irm https://raw.githubusercontent.com/levy-n/claude-desktop-rtl/master/install.p
 ## אחרי עדכון Claude Desktop
 
 עדכון מוחק את הפאצ'. פשוט הריצו שוב את `patch.ps1`.
+
+## קרדיט
+
+פרויקט זה מבוסס על [shraga100/claude-desktop-rtl-patch](https://github.com/shraga100/claude-desktop-rtl-patch) מאת [@shraga100](https://github.com/shraga100), שפיתח את גישת הזרקת ה-RTL, ארכיטקטורת הפאצ' ב-3 פאזות, וטכניקת החלפת ה-certificate עבור Claude Desktop.
+
+פורק זה מוסיף ניהול תלויות אוטומטי, התקנה בשורה אחת, ושיפורים נוספים על הבסיס הזה.

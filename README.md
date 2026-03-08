@@ -106,6 +106,12 @@ claude-desktop-rtl/
 
 
 
+## Acknowledgments
+
+This project is based on [shraga100/claude-desktop-rtl-patch](https://github.com/shraga100/claude-desktop-rtl-patch) by [@shraga100](https://github.com/shraga100), which introduced the core RTL injection approach, the 3-phase ASAR patching architecture, and the certificate swap technique for Claude Desktop.
+
+This fork adds automatic dependency management, a one-liner installer, and additional improvements on top of that foundation.
+
 ## License
 
 MIT License — see [LICENSE](LICENSE).
